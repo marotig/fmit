@@ -313,6 +313,9 @@ void CustomInstrumentTunerForm::noteRangeChanged()
 
 	m_config_form.ui_txtMinHT->setText(QString::fromStdString(h2n(m_config_form.ui_spinMinHT->value())) + " = " + QString::number(h2f(m_config_form.ui_spinMinHT->value())) + " hz");
 	m_config_form.ui_txtMaxHT->setText(QString::fromStdString(h2n(m_config_form.ui_spinMaxHT->value())) + " = " + QString::number(h2f(m_config_form.ui_spinMaxHT->value())) + " hz");
+	int low = m_config_form.ui_spinMinHT->value();
+	int high = m_config_form.ui_spinMaxHT->value();
+        m_glStatistics->updateCollectionRange(low, high);
 }
 
 void CustomInstrumentTunerForm::transpositionChanged()

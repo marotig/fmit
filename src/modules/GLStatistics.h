@@ -83,6 +83,13 @@ class GLStatistics : public QOpenGLWidget, public View
 	virtual void load();
 	virtual void clearSettings();
 
+	void updateCollectionRange( int low, int high );
+	static bool isToBeCollected( int ht );
+
+  private:
+	static int lowest_collectable_semitone;
+	static int highest_collectable_semitone;
+
   public slots:
 	void initializeGL();
 	void paintGL();

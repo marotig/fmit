@@ -29,6 +29,9 @@ using namespace std;
 #include <QPainter>
 #include <Music/Music.h>
 
+int GLStatistics::lowest_collectable_semitone = -96;
+int GLStatistics::highest_collectable_semitone = 96;
+
 void GLStatistics::AverageNote::init()
 {
 	err_mean = 0.0;
@@ -92,6 +95,9 @@ void GLStatistics::addNote(int ht, float err)
 
 	if(ht<setting_scale_min->minimum() || ht>setting_scale_max->maximum())
 		return;
+	if (! isToBeCollected(ht)) {
+		return;
+	}
 
 // 	cout << "ht=" << ht << endl;
 
@@ -187,11 +193,26 @@ void GLStatistics::resizeScale()
 	}
 }
 
+void GLStatistics::updateCollectionRange( int low, int high ) {
+	lowest_collectable_semitone = low;
+	highest_collectable_semitone = high;
+	cout << "Collection range: " << lowest_collectable_semitone << " .. " << highest_collectable_semitone << endl;
+}
+
+bool GLStatistics::isToBeCollected( int ht ) {
+	return lowest_collectable_semitone <= ht && ht <= highest_collectable_semitone;
+}
+
 GLStatistics::GLStatistics(QWidget* parent)
 : QOpenGLWidget(parent)
 , View(tr("Statistics"), this)
 , m_font("Helvetica")
 {
+	// get initial range
+	int low = View::s_settings->value("Auto/ui_spinMinHT", -96).toInt();
+	int high = View::s_settings->value("Auto/ui_spinMaxHT",  96).toInt();
+	updateCollectionRange( low, high );
+
 	// settings
     setting_show->setIcon(QIcon(":/fmit/ui/images/module_statistics.svg"));
 	setting_show->setChecked(false);
