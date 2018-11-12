@@ -28,6 +28,12 @@ using namespace std;
 #include <qwidgetaction.h>
 #include <QPainter>
 #include <Music/Music.h>
+#include <sstream>
+#include <iomanip>
+#include <fstream>
+#include <QDateTime>
+
+std::ofstream* GLStatistics::export_stream = 0;
 
 void GLStatistics::AverageNote::init()
 {
@@ -105,6 +111,7 @@ void GLStatistics::addNote(int ht, float err)
 
 		// add note
 		m_avg_notes[ht-setting_scale_min->value()].addErr(err);
+		append_to_export_stream( ht, err );
 	}
 	else
 	{
@@ -149,6 +156,7 @@ void GLStatistics::addNote(int ht, float err)
 // 		cout << setting_scale_min->value()-ht << endl;
 
 		m_avg_notes[ht-setting_scale_min->value()].addErr(err);
+		append_to_export_stream( ht, err );
 	}
 }
 void GLStatistics::addNote(int ht, int num, int den, float err)
@@ -196,6 +204,16 @@ GLStatistics::GLStatistics(QWidget* parent)
     setting_show->setIcon(QIcon(":/fmit/ui/images/module_statistics.svg"));
 	setting_show->setChecked(false);
 	hide();
+
+	setting_open_export = new QAction(tr("Open export"), this);
+	setting_open_export->setEnabled(true);
+	connect(setting_open_export, SIGNAL(triggered()), this, SLOT(open_export_stream()));
+	m_popup_menu.addAction(setting_open_export);
+
+	setting_close_export = new QAction(tr("Close export"), this);
+	setting_close_export->setEnabled(false);
+	connect(setting_close_export, SIGNAL(triggered()), this, SLOT(close_export_stream()));
+	m_popup_menu.addAction(setting_close_export);
 
 	setting_reset = new QAction(tr("Reset statistics"), this);
 	setting_reset->setShortcut('r');
@@ -351,6 +369,55 @@ void GLStatistics::clearSettings()
 	s_settings->remove("setting_keep_hidden");
 	s_settings->remove("setting_show_std");
 	s_settings->remove("setting_scale_auto");
+}
+
+void GLStatistics::open_export_stream()
+{
+	if (export_stream != 0) {
+		return;
+	}
+
+	// compose file name
+	ostringstream fileNameStream;
+
+	QDateTime current_date_time = QDateTime::currentDateTime();
+	fileNameStream << "fmit-accuracy-"
+		<< current_date_time.toString(QString("yyyyMMdd")).toStdString()
+		<< "-"
+		<< current_date_time.toString(QString("HHmmss")).toStdString()
+		<< ".log";
+
+	cout << "opening export stream to '" << fileNameStream.str() << "'" << endl;
+	export_stream = new ofstream(fileNameStream.str().c_str());
+
+	setting_open_export->setEnabled(false);
+	setting_close_export->setEnabled(true);
+}
+
+void GLStatistics::append_to_export_stream( int ht, float err )
+{
+	if (export_stream == 0) {
+		return;
+	}
+	QDateTime current_date_time = QDateTime::currentDateTime();
+	(*export_stream) << current_date_time.toString(QString("[yyyy-MM-dd HH:mm:ss.zzz] ")).toStdString()
+		<< ht << " " << err << endl;
+}
+
+void GLStatistics::close_export_stream()
+{
+	if (export_stream == 0) {
+		return;
+	}
+
+	cout << "closing current export stream" << endl;
+
+	export_stream->flush();
+	export_stream->close();
+	export_stream = 0;
+
+	setting_open_export->setEnabled(true);
+	setting_close_export->setEnabled(false);
 }
 
 void GLStatistics::reset()

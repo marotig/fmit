@@ -69,6 +69,8 @@ class GLStatistics : public QOpenGLWidget, public View
 	int m_current_ht;
 
 	// settings
+	QAction* setting_open_export;
+	QAction* setting_close_export;
 	QAction* setting_reset;
 	QAction* setting_keep_hidden;
 	QSpinBox* setting_keep_n_values;
@@ -83,6 +85,11 @@ class GLStatistics : public QOpenGLWidget, public View
 	virtual void load();
 	virtual void clearSettings();
 
+	static void append_to_export_stream( int ht, float err );
+
+  private:
+	static std::ofstream* export_stream;
+
   public slots:
 	void initializeGL();
 	void paintGL();
@@ -90,6 +97,9 @@ class GLStatistics : public QOpenGLWidget, public View
 
 	void reset();
 	void resizeScale();
+
+	void open_export_stream();
+	void close_export_stream();
 };
 
 #endif // _GLErrorHistory_h_
