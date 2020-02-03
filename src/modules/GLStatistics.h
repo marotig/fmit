@@ -69,6 +69,8 @@ class GLStatistics : public QOpenGLWidget, public View
 	int m_current_ht;
 
 	// settings
+	QAction* setting_open_export;
+	QAction* setting_close_export;
 	QAction* setting_reset;
 	QAction* setting_keep_hidden;
 	QSpinBox* setting_keep_n_values;
@@ -86,9 +88,13 @@ class GLStatistics : public QOpenGLWidget, public View
 	void updateCollectionRange( int low, int high );
 	static bool isToBeCollected( int ht );
 
+	static void append_to_export_stream( int ht, float err );
+
   private:
 	static int lowest_collectable_semitone;
 	static int highest_collectable_semitone;
+
+	static std::ofstream* export_stream;
 
   public slots:
 	void initializeGL();
@@ -97,6 +103,9 @@ class GLStatistics : public QOpenGLWidget, public View
 
 	void reset();
 	void resizeScale();
+
+	void open_export_stream();
+	void close_export_stream();
 };
 
 #endif // _GLErrorHistory_h_
